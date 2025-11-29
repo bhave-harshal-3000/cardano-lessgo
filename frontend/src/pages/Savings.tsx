@@ -1,568 +1,479 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  TrendingUp,
-  Calendar,
-  Target,
-  Plus,
-  ArrowUpCircle,
-  Clock,
-  CheckCircle,
-  Filter,
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Target, Calendar, Plus, Sparkles } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { AnimatedPage } from '../components/AnimatedPage';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Modal } from '../components/Modal';
-import { PiggyBankAnimation } from '../components/PiggyBankAnimation';
 import { TopBar } from '../components/TopBar';
 
-interface SaveTransaction {
+interface SavingsGoal {
   id: string;
-  date: string;
-  amount: number;
-  type: 'manual' | 'auto';
-  description: string;
+  name: string;
+  target: number;
+  current: number;
+  deadline: string;
+  color: string;
 }
 
 export const Savings: React.FC = () => {
-  const [totalSavings, setTotalSavings] = useState(0);
-  const [displaySavings, setDisplaySavings] = useState(0);
-  const [showQuickSaveModal, setShowQuickSaveModal] = useState(false);
-  const [quickSaveAmount, setQuickSaveAmount] = useState('');
-  const [showCoinDrop, setShowCoinDrop] = useState(false);
-  const [sortBy, setSortBy] = useState<'date' | 'amount'>('date');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [coinDrop, setCoinDrop] = useState(0);
 
-  const savingsGoal = 5000;
-  const actualSavings = 3245;
-  const nextAutoSave = { date: '2025-12-01', amount: 150 };
-
-  const [savingsHistory] = useState<SaveTransaction[]>([
-    { id: '1', date: '2024-11-28', amount: 200, type: 'auto', description: 'Auto-save from paycheck' },
-    { id: '2', date: '2024-11-25', amount: 50, type: 'manual', description: 'Quick save' },
-    { id: '3', date: '2024-11-20', amount: 150, type: 'auto', description: 'Auto-save from paycheck' },
-    { id: '4', date: '2024-11-15', amount: 100, type: 'manual', description: 'Bonus savings' },
-    { id: '5', date: '2024-11-10', amount: 200, type: 'auto', description: 'Auto-save from paycheck' },
-    { id: '6', date: '2024-11-05', amount: 75, type: 'manual', description: 'Quick save' },
+  const [savingsGoals] = useState<SavingsGoal[]>([
+    {
+      id: '1',
+      name: 'Emergency Fund',
+      target: 10000,
+      current: 6500,
+      deadline: '2025-12-31',
+      color: '#4a90e2',
+    },
+    {
+      id: '2',
+      name: 'Vacation to Japan',
+      target: 5000,
+      current: 2800,
+      deadline: '2025-08-15',
+      color: '#50c878',
+    },
+    {
+      id: '3',
+      name: 'New Laptop',
+      target: 2000,
+      current: 1650,
+      deadline: '2025-06-01',
+      color: '#f5a623',
+    },
+    {
+      id: '4',
+      name: 'Investment Portfolio',
+      target: 25000,
+      current: 8900,
+      deadline: '2026-12-31',
+      color: '#9b59b6',
+    },
   ]);
 
-  const monthlyData = [
-    { month: 'Jun', amount: 450 },
-    { month: 'Jul', amount: 520 },
-    { month: 'Aug', amount: 480 },
-    { month: 'Sep', amount: 610 },
-    { month: 'Oct', amount: 580 },
-    { month: 'Nov', amount: 605 },
-  ];
-
-  const maxAmount = Math.max(...monthlyData.map((d) => d.amount));
-
+  // Random coin drop animation
   useEffect(() => {
-    setTotalSavings(actualSavings);
+    const interval = setInterval(() => {
+      setCoinDrop((prev) => prev + 1);
+    }, Math.random() * 3000 + 2000); // Random interval between 2-5 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
-  // Count-up animation
-  useEffect(() => {
-    const duration = 2000;
-    const steps = 60;
-    const increment = totalSavings / steps;
-    let current = 0;
-
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= totalSavings) {
-        setDisplaySavings(totalSavings);
-        clearInterval(timer);
-      } else {
-        setDisplaySavings(Math.floor(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(timer);
-  }, [totalSavings]);
-
-  const handleQuickSave = () => {
-    const amount = parseFloat(quickSaveAmount);
-    if (amount > 0) {
-      setShowCoinDrop(true);
-      setTimeout(() => {
-        setTotalSavings((prev) => prev + amount);
-        setShowCoinDrop(false);
-        setShowQuickSaveModal(false);
-        setQuickSaveAmount('');
-      }, 1500);
-    }
-  };
-
-  const sortedHistory = [...savingsHistory].sort((a, b) => {
-    if (sortBy === 'date') {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    }
-    return b.amount - a.amount;
-  });
-
-  const progressPercentage = (totalSavings / savingsGoal) * 100;
+  const totalSaved = savingsGoals.reduce((sum, goal) => sum + goal.current, 0);
+  const totalTarget = savingsGoals.reduce((sum, goal) => sum + goal.target, 0);
+  const overallProgress = (totalSaved / totalTarget) * 100;
 
   return (
     <AnimatedPage>
       <TopBar />
-      <div role="main" style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
-        {/* Header with Piggy Animation */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ marginBottom: '32px', textAlign: 'center' }}
-        >
+      <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto', display: 'flex', gap: '32px' }}>
+        {/* Left Side - Savings Details */}
+        <div style={{ flex: '1', minWidth: '0' }}>
+          {/* Header */}
           <motion.div
-            initial={{ scale: 0.8, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-            style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{ marginBottom: '32px' }}
           >
-            <PiggyBankAnimation />
-          </motion.div>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Savings</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-            Track your savings journey and reach your financial goals
-          </p>
-        </motion.div>
-
-        {/* Coin Drop Animation Overlay */}
-        <AnimatePresence>
-          {showCoinDrop && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 100,
-                pointerEvents: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ y: -100, x: 0, opacity: 1, scale: 1 }}
-                  animate={{
-                    y: [- 100, window.innerHeight],
-                    x: [0, (Math.random() - 0.5) * 200],
-                    opacity: [1, 1, 0],
-                    rotate: [0, 360 * (Math.random() > 0.5 ? 1 : -1)],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    delay: i * 0.1,
-                    ease: 'easeIn',
-                  }}
-                  style={{
-                    position: 'absolute',
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: '#f5a623',
-                    boxShadow: '0 4px 16px rgba(245, 166, 35, 0.6)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    color: '#fff',
-                  }}
-                >
-                  ₳
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Total Savings Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          style={{ marginBottom: '32px' }}
-        >
-          <Card>
-            <div style={{ textAlign: 'center', padding: '24px' }}>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px', marginBottom: '12px' }}>
-                Total Savings
-              </p>
-              <motion.div
-                key={totalSavings}
-                initial={{ scale: 1 }}
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  fontSize: '56px',
-                  fontWeight: '700',
-                  color: 'var(--color-accent)',
-                  textShadow: '0 0 30px rgba(80, 200, 120, 0.3)',
-                }}
-              >
-                ${displaySavings.toLocaleString()}
-              </motion.div>
-              <div style={{ marginTop: '24px' }}>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  icon={Plus}
-                  onClick={() => setShowQuickSaveModal(true)}
-                  aria-label="Quick Save"
-                >
-                  Quick Save
-                </Button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Savings Goals</h1>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
+                  Track and achieve your financial goals
+                </p>
               </div>
+              <Button variant="primary" icon={Plus} onClick={() => setShowAddModal(true)}>
+                New Goal
+              </Button>
             </div>
-          </Card>
-        </motion.div>
 
-        {/* Goals and Auto-Save Section */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-          {/* Savings Goal */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
+            {/* Overall Stats */}
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--color-primary-muted)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--color-primary)',
-                  }}
-                >
-                  <Target size={20} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+                <div>
+                  <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                    Total Saved
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-accent)' }}>
+                    ${totalSaved.toLocaleString()}
+                  </div>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Savings Goal</h3>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Emergency Fund</p>
+                  <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                    Total Target
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: '700' }}>
+                    ${totalTarget.toLocaleString()}
+                  </div>
                 </div>
-              </div>
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>Progress</span>
-                  <span style={{ fontSize: '14px', fontWeight: '600' }}>{progressPercentage.toFixed(1)}%</span>
+                <div>
+                  <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                    Overall Progress
+                  </div>
+                  <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-primary)' }}>
+                    {overallProgress.toFixed(1)}%
+                  </div>
                 </div>
-                <div
-                  style={{
-                    width: '100%',
-                    height: '12px',
-                    background: 'var(--color-surface)',
-                    borderRadius: '6px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercentage}%` }}
-                    transition={{ duration: 1.5, delay: 0.5, ease: 'easeOut' }}
-                    style={{
-                      height: '100%',
-                      background: 'linear-gradient(90deg, var(--color-primary), var(--color-accent))',
-                      boxShadow: '0 0 12px rgba(80, 200, 120, 0.5)',
-                    }}
-                  />
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
-                <span style={{ color: 'var(--color-text-secondary)' }}>Current</span>
-                <span style={{ fontWeight: '600' }}>${totalSavings.toLocaleString()} / ${savingsGoal.toLocaleString()}</span>
               </div>
             </Card>
           </motion.div>
 
-          {/* Auto-Save Schedule */}
+          {/* Savings Goals List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {savingsGoals.map((goal, index) => {
+              const progress = (goal.current / goal.target) * 100;
+              const daysLeft = Math.ceil(
+                (new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+              );
+
+              return (
+                <motion.div
+                  key={goal.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '4px' }}>{goal.name}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Calendar size={14} />
+                            {daysLeft > 0 ? `${daysLeft} days left` : 'Deadline passed'}
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Target size={14} />
+                            ${goal.target.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '24px', fontWeight: '700', color: goal.color }}>
+                          ${goal.current.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+                          {progress.toFixed(1)}% complete
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div style={{ position: 'relative', height: '8px', background: 'var(--color-surface)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 1, ease: 'easeOut', delay: index * 0.1 + 0.3 }}
+                        style={{
+                          height: '100%',
+                          background: goal.color,
+                          borderRadius: '4px',
+                        }}
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                      <Button variant="outline" size="sm" icon={Plus}>
+                        Add Funds
+                      </Button>
+                      <Button variant="ghost" size="sm" icon={Sparkles}>
+                        AI Optimize
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* AI Insights */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            style={{ marginTop: '24px' }}
           >
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <div
                   style={{
                     width: '40px',
                     height: '40px',
+                    background: 'var(--color-primary-muted)',
                     borderRadius: 'var(--radius-md)',
-                    background: 'var(--color-warning-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'var(--color-warning)',
+                    flexShrink: 0,
                   }}
                 >
-                  <Clock size={20} />
+                  <Sparkles size={20} style={{ color: 'var(--color-primary)' }} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600' }}>Auto-Save Schedule</h3>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>Next scheduled save</p>
-                </div>
-              </div>
-              <div style={{ padding: '16px', background: 'var(--color-surface)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <Calendar size={18} style={{ color: 'var(--color-text-tertiary)' }} />
-                  <span style={{ fontSize: '14px' }}>
-                    {new Date(nextAutoSave.date).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <ArrowUpCircle size={18} style={{ color: 'var(--color-accent)' }} />
-                  <span style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-accent)' }}>
-                    ${nextAutoSave.amount}
-                  </span>
+                  <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>AI Recommendation</h4>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', lineHeight: '1.6' }}>
+                    Based on your spending patterns, you can increase your Emergency Fund contribution by $200/month by
+                    reducing dining out expenses. This will help you reach your goal 3 months earlier.
+                  </p>
                 </div>
               </div>
             </Card>
           </motion.div>
         </div>
 
-        {/* Savings History Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          style={{ marginBottom: '32px' }}
-        >
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-              <TrendingUp size={24} style={{ color: 'var(--color-primary)' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Monthly Savings Trend</h3>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '16px', height: '200px', padding: '0 8px' }}>
-              {monthlyData.map((data, index) => {
-                const heightPercent = (data.amount / maxAmount) * 100;
-                return (
-                  <div
-                    key={data.month}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: `${heightPercent}%`, opacity: 1 }}
-                      transition={{ delay: 0.6 + index * 0.1, duration: 0.5, ease: 'easeOut' }}
-                      whileHover={{ scale: 1.05, boxShadow: '0 0 20px rgba(80, 200, 120, 0.4)' }}
-                      style={{
-                        width: '100%',
-                        background: 'linear-gradient(180deg, var(--color-accent), var(--color-primary))',
-                        borderRadius: '8px 8px 0 0',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        minHeight: '20px',
-                      }}
-                      title={`$${data.amount}`}
-                    >
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '-24px',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          whiteSpace: 'nowrap',
-                          opacity: 0,
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                      >
-                        ${data.amount}
-                      </div>
-                    </motion.div>
-                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: '500' }}>
-                      {data.month}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Recent Saves List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <Card padding="none">
-            <div style={{ padding: '24px', borderBottom: '1px solid var(--color-border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Recent Saves</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Filter size={18} style={{ color: 'var(--color-text-tertiary)' }} />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'date' | 'amount')}
-                    style={{ padding: '8px 12px', fontSize: '14px' }}
-                    aria-label="Sort by"
-                  >
-                    <option value="date">Sort by Date</option>
-                    <option value="amount">Sort by Amount</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={{ padding: '16px 24px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>
-                      Date
-                    </th>
-                    <th style={{ padding: '16px 24px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>
-                      Description
-                    </th>
-                    <th style={{ padding: '16px 24px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>
-                      Type
-                    </th>
-                    <th style={{ padding: '16px 24px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AnimatePresence>
-                    {sortedHistory.map((save, index) => (
-                      <motion.tr
-                        key={save.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        transition={{ delay: index * 0.05 }}
-                        style={{ borderBottom: '1px solid var(--color-border)' }}
-                        whileHover={{ background: 'var(--color-surface)' }}
-                      >
-                        <td style={{ padding: '16px 24px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Calendar size={16} style={{ color: 'var(--color-text-tertiary)' }} />
-                            <span style={{ fontSize: '14px' }}>
-                              {new Date(save.date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: '500' }}>{save.description}</span>
-                        </td>
-                        <td style={{ padding: '16px 24px' }}>
-                          <span
-                            style={{
-                              fontSize: '13px',
-                              padding: '4px 12px',
-                              background: save.type === 'auto' ? 'var(--color-warning-muted)' : 'var(--color-primary-muted)',
-                              color: save.type === 'auto' ? 'var(--color-warning)' : 'var(--color-primary)',
-                              borderRadius: 'var(--radius-sm)',
-                            }}
-                          >
-                            {save.type === 'auto' ? 'Auto-Save' : 'Manual'}
-                          </span>
-                        </td>
-                        <td
-                          style={{
-                            padding: '16px 24px',
-                            textAlign: 'right',
-                            fontWeight: '600',
-                            fontSize: '15px',
-                            color: 'var(--color-accent)',
-                          }}
-                        >
-                          +${save.amount.toFixed(2)}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Quick Save Modal */}
-        <Modal
-          isOpen={showQuickSaveModal}
-          onClose={() => setShowQuickSaveModal(false)}
-          title="Quick Save"
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <p style={{ color: 'var(--color-text-secondary)' }}>
-              Add money to your savings instantly
-            </p>
-            <div>
-              <label
-                style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}
-                htmlFor="quickSaveAmount"
-              >
-                Amount
-              </label>
-              <input
-                id="quickSaveAmount"
-                type="number"
-                placeholder="0.00"
-                value={quickSaveAmount}
-                onChange={(e) => setQuickSaveAmount(e.target.value)}
-                style={{ width: '100%', fontSize: '18px', padding: '12px' }}
-                min="0"
-                step="0.01"
-                aria-label="Quick save amount"
-              />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              {[25, 50, 100].map((amount) => (
-                <Button
-                  key={amount}
-                  variant="outline"
-                  onClick={() => setQuickSaveAmount(amount.toString())}
-                  size="sm"
+        {/* Right Side - Sticky Animated Piggy Bank */}
+        <div style={{ width: '400px', flexShrink: 0, position: 'sticky', top: '100px', height: 'fit-content' }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          >
+            <Card>
+              <div style={{ position: 'relative', height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                {/* Piggy Bank with Breathing Animation */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.02, 1],
+                    y: [0, -5, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  style={{ position: 'relative', zIndex: 2 }}
                 >
-                  ${amount}
-                </Button>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-              <Button variant="outline" fullWidth onClick={() => setShowQuickSaveModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={handleQuickSave}
-                icon={CheckCircle}
-                disabled={!quickSaveAmount || parseFloat(quickSaveAmount) <= 0}
-              >
-                Save Now
-              </Button>
-            </div>
-          </div>
-        </Modal>
+                  <PiggyBankSVG />
+                </motion.div>
+
+                {/* Coin Drop Animations */}
+                {[...Array(5)].map((_, i) => (
+                  <CoinDrop key={`${coinDrop}-${i}`} delay={i * 0.3} />
+                ))}
+
+                {/* Background Glow */}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  style={{
+                    position: 'absolute',
+                    width: '300px',
+                    height: '300px',
+                    background: 'radial-gradient(circle, var(--color-primary-muted) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                    zIndex: 1,
+                  }}
+                />
+              </div>
+
+              {/* Motivational Text */}
+              <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                <motion.h3
+                  key={coinDrop}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: 'var(--color-primary)' }}
+                >
+                  Keep Saving!
+                </motion.h3>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                  Every small contribution brings you closer to your goals
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        </div>
       </div>
+
+      {/* Add Goal Modal */}
+      <Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Create Savings Goal">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+              Goal Name
+            </label>
+            <input type="text" placeholder="e.g., Emergency Fund" style={{ width: '100%' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+              Target Amount
+            </label>
+            <input type="number" placeholder="10000" style={{ width: '100%' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+              Current Amount
+            </label>
+            <input type="number" placeholder="0" style={{ width: '100%' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+              Target Date
+            </label>
+            <input type="date" style={{ width: '100%' }} />
+          </div>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+            <Button variant="outline" fullWidth onClick={() => setShowAddModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" fullWidth onClick={() => setShowAddModal(false)}>
+              Create Goal
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </AnimatedPage>
+  );
+};
+
+// Coin Drop Component
+const CoinDrop: React.FC<{ delay: number }> = ({ delay }) => {
+  const randomX = Math.random() * 100 - 50;
+
+  return (
+    <motion.div
+      initial={{ y: -100, x: randomX, opacity: 0, rotate: 0 }}
+      animate={{
+        y: [0, 180],
+        opacity: [0, 1, 1, 0],
+        rotate: [0, 360],
+      }}
+      transition={{
+        duration: 1.5,
+        delay: delay,
+        ease: 'easeIn',
+      }}
+      style={{
+        position: 'absolute',
+        top: '20px',
+        zIndex: 3,
+      }}
+    >
+      <div
+        style={{
+          width: '30px',
+          height: '30px',
+          background: 'linear-gradient(135deg, #f5a623 0%, #f39c12 100%)',
+          borderRadius: '50%',
+          boxShadow: '0 4px 12px rgba(245, 166, 35, 0.4)',
+          border: '3px solid #f9ca7b',
+        }}
+      />
+    </motion.div>
+  );
+};
+
+// Piggy Bank SVG Component - Based on reference image
+const PiggyBankSVG: React.FC = () => {
+  return (
+    <svg
+      width="320"
+      height="280"
+      viewBox="0 0 400 350"
+      fill="none"
+      style={{ filter: 'drop-shadow(0 20px 40px rgba(74, 144, 226, 0.3))' }}
+    >
+      <defs>
+        <linearGradient id="pigBody" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#ffb88c" />
+          <stop offset="100%" stopColor="#ff9966" />
+        </linearGradient>
+        <linearGradient id="pigDark" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#ff9966" />
+          <stop offset="100%" stopColor="#ff8855" />
+        </linearGradient>
+        <linearGradient id="coinGold" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ffd966" />
+          <stop offset="100%" stopColor="#ffbb33" />
+        </linearGradient>
+      </defs>
+
+      {/* Shadow */}
+      <ellipse cx="200" cy="310" rx="140" ry="20" fill="#000000" opacity="0.15" />
+
+      {/* Back left leg */}
+      <rect x="140" y="260" width="30" height="50" rx="15" fill="url(#pigDark)" />
+      
+      {/* Back right leg */}
+      <rect x="230" y="260" width="30" height="50" rx="15" fill="url(#pigDark)" />
+
+      {/* Main body - large rounded circle */}
+      <ellipse cx="200" cy="180" rx="110" ry="100" fill="url(#pigBody)" />
+      
+      {/* Body bottom shade */}
+      <ellipse cx="200" cy="220" rx="100" ry="70" fill="url(#pigDark)" opacity="0.3" />
+
+      {/* Ear */}
+      <ellipse cx="160" cy="90" rx="18" ry="28" fill="url(#pigBody)" transform="rotate(-20 160 90)" />
+      <ellipse cx="162" cy="95" rx="10" ry="18" fill="url(#pigDark)" opacity="0.4" transform="rotate(-20 162 95)" />
+
+      {/* Head/Snout area - left side */}
+      <ellipse cx="110" cy="165" rx="45" ry="40" fill="url(#pigBody)" />
+      
+      {/* Snout rectangle */}
+      <rect x="60" y="145" width="50" height="40" rx="8" fill="url(#pigBody)" />
+      <rect x="65" y="150" width="40" height="30" rx="6" fill="url(#pigDark)" opacity="0.2" />
+      
+      {/* Nostrils */}
+      <circle cx="75" cy="165" r="4" fill="#8B5A3C" opacity="0.6" />
+      <circle cx="90" cy="165" r="4" fill="#8B5A3C" opacity="0.6" />
+      
+      {/* Eye */}
+      <circle cx="125" cy="145" r="6" fill="#8B5A3C" />
+
+      {/* Front left leg */}
+      <rect x="155" y="260" width="30" height="50" rx="15" fill="url(#pigBody)" />
+      
+      {/* Front right leg */}
+      <rect x="215" y="260" width="30" height="50" rx="15" fill="url(#pigBody)" />
+
+      {/* Curly tail on right */}
+      <path
+        d="M 290 150 Q 310 145 325 155 Q 340 165 335 180 Q 330 190 320 185"
+        stroke="url(#pigBody)"
+        strokeWidth="12"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 292 150 Q 310 147 323 155 Q 335 163 332 175"
+        stroke="url(#pigDark)"
+        strokeWidth="7"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.6"
+      />
+
+      {/* Coin slot on top */}
+      <rect
+        x="180"
+        y="110"
+        width="50"
+        height="8"
+        rx="4"
+        fill="#6B4423"
+      />
+      <rect
+        x="180"
+        y="108"
+        width="50"
+        height="3"
+        rx="1.5"
+        fill="#4A2F1A"
+      />
+    </svg>
   );
 };
