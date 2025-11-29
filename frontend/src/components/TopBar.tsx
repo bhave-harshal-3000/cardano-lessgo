@@ -16,6 +16,7 @@ export const TopBar: React.FC<TopBarProps> = ({ walletAddress, onWalletConnect }
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/transactions', label: 'Transactions' },
     { path: '/budget', label: 'Budget' },
+    { path: '/savings', label: 'Savings' },
     { path: '/agents', label: 'Agents' },
     { path: '/insights', label: 'Insights' },
     { path: '/settings', label: 'Settings' },
