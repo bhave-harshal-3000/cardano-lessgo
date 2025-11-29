@@ -1,12 +1,23 @@
-import { motion } from 'framer-motion';
-import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Brain, Shield, Zap, Lock, TrendingUp, BarChart3 } from 'lucide-react';
+import {
+  FallingCurrency,
+  FloatingNumbers,
+  GlowingParticles,
+  ScanningLight,
+  TypewriterText,
+} from '../components';
 
 export const Landing: React.FC = () => {
   const navigate = useNavigate();
   const [showCursor, setShowCursor] = useState(true);
   const [count, setCount] = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 500], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
   // Blinking cursor effect
   useEffect(() => {
@@ -40,8 +51,9 @@ export const Landing: React.FC = () => {
     page: {
       minHeight: '100vh',
       background: 'linear-gradient(180deg, #fafaf8 0%, #f0f0ea 100%)',
-      fontFamily: "'Courier New', Courier, monospace",
+      fontFamily: "'Courier Prime', 'Courier New', Courier, monospace",
       position: 'relative' as const,
+      color: '#000000',
     },
     paperTexture: {
       position: 'fixed' as const,
@@ -71,22 +83,26 @@ export const Landing: React.FC = () => {
       zIndex: 10,
       background: 'rgba(255,255,255,0.8)',
       backdropFilter: 'blur(10px)',
+      color: '#000000',
     },
     logo: {
       fontSize: '24px',
       fontWeight: 'bold' as const,
       letterSpacing: '3px',
+      color: '#000000',
     },
     navLinks: {
       display: 'flex',
       gap: '32px',
       fontSize: '14px',
       letterSpacing: '1px',
+      color: '#000000',
     },
     navLink: {
       cursor: 'pointer',
       opacity: 0.7,
       transition: 'opacity 0.3s',
+      color: '#000000',
     },
     hero: {
       textAlign: 'center' as const,
@@ -95,12 +111,14 @@ export const Landing: React.FC = () => {
       margin: '0 auto',
       position: 'relative' as const,
       zIndex: 2,
+      color: '#000000',
     },
     receiptHeader: {
       fontSize: '12px',
       letterSpacing: '2px',
       opacity: 0.5,
       marginBottom: '16px',
+      color: '#000000',
     },
     mainTitle: {
       fontSize: '64px',
@@ -108,18 +126,21 @@ export const Landing: React.FC = () => {
       letterSpacing: '4px',
       marginBottom: '24px',
       lineHeight: '1.1',
+      color: '#000000',
     },
     subtitle: {
       fontSize: '20px',
       opacity: 0.7,
       marginBottom: '16px',
       letterSpacing: '1px',
+      color: '#000000',
     },
     sessionInfo: {
       fontSize: '12px',
       opacity: 0.4,
       marginBottom: '48px',
       letterSpacing: '1px',
+      color: '#000000',
     },
     divider: {
       borderTop: '2px dashed rgba(0,0,0,0.15)',
@@ -172,6 +193,7 @@ export const Landing: React.FC = () => {
       textAlign: 'center' as const,
       marginBottom: '24px',
       letterSpacing: '3px',
+      color: '#000000',
     },
     sectionSubtitle: {
       fontSize: '16px',
@@ -179,6 +201,7 @@ export const Landing: React.FC = () => {
       opacity: 0.6,
       marginBottom: '80px',
       letterSpacing: '1px',
+      color: '#000000',
     },
     featuresGrid: {
       display: 'grid',
@@ -193,6 +216,7 @@ export const Landing: React.FC = () => {
       boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
       transition: 'all 0.3s',
       position: 'relative' as const,
+      color: '#000000',
     },
     featureIcon: {
       width: '56px',
@@ -209,11 +233,13 @@ export const Landing: React.FC = () => {
       fontWeight: 'bold' as const,
       marginBottom: '12px',
       letterSpacing: '1px',
+      color: '#000000',
     },
     featureDescription: {
       fontSize: '14px',
       lineHeight: '1.7',
       opacity: 0.7,
+      color: '#000000',
     },
     featurePrice: {
       fontSize: '18px',
@@ -221,6 +247,7 @@ export const Landing: React.FC = () => {
       marginTop: '16px',
       paddingTop: '16px',
       borderTop: '1px dashed rgba(0,0,0,0.2)',
+      color: '#000000',
     },
     statsSection: {
       padding: '80px 40px',
@@ -229,6 +256,7 @@ export const Landing: React.FC = () => {
       borderBottom: '3px double rgba(0,0,0,0.2)',
       position: 'relative' as const,
       zIndex: 2,
+      color: '#000000',
     },
     statsGrid: {
       display: 'grid',
@@ -237,39 +265,46 @@ export const Landing: React.FC = () => {
       maxWidth: '900px',
       margin: '0 auto',
       textAlign: 'center' as const,
+      color: '#000000',
     },
     statNumber: {
       fontSize: '48px',
       fontWeight: 'bold' as const,
       marginBottom: '8px',
+      color: '#000000',
     },
     statLabel: {
       fontSize: '14px',
       opacity: 0.6,
       letterSpacing: '1px',
+      color: '#000000',
     },
     footer: {
       padding: '60px 40px 40px',
       textAlign: 'center' as const,
       position: 'relative' as const,
       zIndex: 2,
+      color: '#000000',
     },
     footerMessage: {
-      fontSize: '16px',
+      fontSize: '20px',
       marginBottom: '24px',
       letterSpacing: '1px',
+      color: '#000000',
     },
     footerLinks: {
       display: 'flex',
       gap: '24px',
       justifyContent: 'center',
-      fontSize: '13px',
+      fontSize: '16px',
       opacity: 0.6,
       marginBottom: '24px',
+      color: '#000000',
     },
     footerLink: {
       cursor: 'pointer',
       transition: 'opacity 0.3s',
+      color: '#000000',
     },
     barcode: {
       display: 'flex',
@@ -372,7 +407,21 @@ export const Landing: React.FC = () => {
       </motion.nav>
 
       {/* Hero Section */}
-      <section style={receiptStyles.hero}>
+      <motion.section
+        ref={heroRef}
+        style={{
+          ...receiptStyles.hero,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Parallax Background Effects */}
+        <motion.div style={{ y, opacity }}>
+          <GlowingParticles />
+          <FallingCurrency />
+          <FloatingNumbers />
+        </motion.div>
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -391,14 +440,14 @@ export const Landing: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           style={receiptStyles.mainTitle}
         >
-          FinanceAI
+          <TypewriterText text="FinanceAI" delay={300} speed={120} />
         </motion.h1>
 
         <motion.p
           initial="hidden"
           animate="visible"
           variants={printRevealVariants}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 1.5 }}
           style={receiptStyles.subtitle}
         >
           AI-POWERED EXPENSE TRACKING
@@ -428,21 +477,22 @@ export const Landing: React.FC = () => {
             style={receiptStyles.primaryButton}
             whileHover={{
               scale: 1.05,
-              boxShadow: '0 0 20px rgba(0,0,0,0.3)',
+              boxShadow: '0 0 30px rgba(0,0,0,0.4), 0 0 60px rgba(0,0,0,0.2)',
+              y: -4,
             }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.95, y: 0 }}
             onClick={() => navigate('/onboard')}
           >
             <motion.span
               animate={{
                 textShadow: [
                   '0 0 0px rgba(255,255,255,0)',
-                  '0 0 10px rgba(255,255,255,0.5)',
+                  '0 0 15px rgba(255,255,255,0.6)',
                   '0 0 0px rgba(255,255,255,0)',
                 ],
               }}
               transition={{
-                duration: 2,
+                duration: 2.5,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
@@ -457,17 +507,24 @@ export const Landing: React.FC = () => {
               scale: 1.05,
               background: '#000',
               color: '#fff',
+              y: -4,
             }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.95, y: 0 }}
             onClick={() => navigate('/onboard')}
           >
             CONNECT WALLET 🔐
           </motion.button>
         </motion.div>
-      </section>
+      </motion.section>
 
       {/* Stats Section */}
-      <section style={receiptStyles.statsSection}>
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.8 }}
+        style={receiptStyles.statsSection}
+      >
         <div style={receiptStyles.statsGrid}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -475,8 +532,10 @@ export const Landing: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div style={receiptStyles.statNumber}>{count}%</div>
-            <div style={receiptStyles.statLabel}>AVERAGE SAVINGS</div>
+            <ScanningLight>
+              <div style={receiptStyles.statNumber}>{count}%</div>
+              <div style={receiptStyles.statLabel}>AVERAGE SAVINGS</div>
+            </ScanningLight>
           </motion.div>
 
           <motion.div
@@ -485,8 +544,10 @@ export const Landing: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div style={receiptStyles.statNumber}>$0</div>
-            <div style={receiptStyles.statLabel}>SETUP COST</div>
+            <ScanningLight>
+              <div style={receiptStyles.statNumber}>$0</div>
+              <div style={receiptStyles.statLabel}>SETUP COST</div>
+            </ScanningLight>
           </motion.div>
 
           <motion.div
@@ -495,8 +556,10 @@ export const Landing: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div style={receiptStyles.statNumber}>24/7</div>
-            <div style={receiptStyles.statLabel}>AI MONITORING</div>
+            <ScanningLight>
+              <div style={receiptStyles.statNumber}>24/7</div>
+              <div style={receiptStyles.statLabel}>AI MONITORING</div>
+            </ScanningLight>
           </motion.div>
 
           <motion.div
@@ -505,14 +568,22 @@ export const Landing: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <div style={receiptStyles.statNumber}>∞</div>
-            <div style={receiptStyles.statLabel}>BLOCKCHAIN SECURITY</div>
+            <ScanningLight>
+              <div style={receiptStyles.statNumber}>∞</div>
+              <div style={receiptStyles.statLabel}>BLOCKCHAIN SECURITY</div>
+            </ScanningLight>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Features Section */}
-      <section style={receiptStyles.featuresSection}>
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.8 }}
+        style={receiptStyles.featuresSection}
+      >
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -536,8 +607,10 @@ export const Landing: React.FC = () => {
               transition={{ duration: 0.6, delay: index * 0.15 }}
               style={receiptStyles.featureCard}
               whileHover={{
-                y: -8,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                y: -12,
+                boxShadow: '0 12px 32px rgba(0,0,0,0.15), 0 0 0 2px rgba(0,0,0,0.1)',
+                scale: 1.02,
+                transition: { duration: 0.3 },
               }}
             >
               <div style={receiptStyles.featureIcon}>
@@ -549,10 +622,16 @@ export const Landing: React.FC = () => {
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer */}
-      <footer style={receiptStyles.footer}>
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        style={receiptStyles.footer}
+      >
         <div style={receiptStyles.divider} />
 
         <motion.div
@@ -604,7 +683,7 @@ export const Landing: React.FC = () => {
             © 2025 FinanceAI • All Rights Reserved
           </div>
         </motion.div>
-      </footer>
+      </motion.footer>
     </div>
   );
 };
