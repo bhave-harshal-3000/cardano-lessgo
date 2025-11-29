@@ -47,7 +47,7 @@ export const Agents: React.FC = () => {
       id: '3',
       name: 'Savings Maximizer',
       description: 'Identifies opportunities to increase savings without compromising your lifestyle.',
-      provider: 'FinanceAI',
+      provider: 'FinanceBot',
       price: 5,
       rating: 4.7,
       enabled: false,

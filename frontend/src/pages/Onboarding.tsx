@@ -106,7 +106,7 @@ export const Onboarding: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <h2 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px' }}>
-                  Welcome to FinanceAI
+                  Welcome to FinanceBot
                 </h2>
                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px', fontSize: '16px' }}>
                   Choose how you'd like to get started. You can always connect your wallet later.

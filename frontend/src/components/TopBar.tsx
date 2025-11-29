@@ -48,24 +48,18 @@ export const TopBar: React.FC<TopBarProps> = ({ walletAddress, onWalletConnect }
           }}
         >
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <motion.div
+            <motion.img
+              src="/logo.png"
+              alt="FinanceBot Logo"
               style={{
                 width: '40px',
                 height: '40px',
-                background: 'var(--color-primary)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                fontSize: '20px',
+                objectFit: 'contain',
               }}
-              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-            >
-              F
-            </motion.div>
-            <span style={{ fontSize: '20px', fontWeight: '600' }}>FinanceAI</span>
+            />
+            <span style={{ fontSize: '20px', fontWeight: '600', color: '#ffffff' }}>FinanceBot</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -87,8 +81,8 @@ export const TopBar: React.FC<TopBarProps> = ({ walletAddress, onWalletConnect }
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '14px',
                   fontWeight: '500',
-                  color: isActive(item.path) ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                  background: isActive(item.path) ? 'var(--color-surface)' : 'transparent',
+                  color: isActive(item.path) ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                  background: 'transparent',
                   position: 'relative',
                   overflow: 'hidden',
                 }}
@@ -122,7 +116,7 @@ export const TopBar: React.FC<TopBarProps> = ({ walletAddress, onWalletConnect }
                 onClick={onWalletConnect}
                 style={{
                   padding: '8px 16px',
-                  background: 'var(--color-primary)',
+                  background: '#000000',
                   color: '#fff',
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '14px',
@@ -180,8 +174,8 @@ export const TopBar: React.FC<TopBarProps> = ({ walletAddress, onWalletConnect }
                   borderRadius: 'var(--radius-sm)',
                   fontSize: '14px',
                   fontWeight: '500',
-                  color: isActive(item.path) ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
-                  background: isActive(item.path) ? 'var(--color-surface)' : 'transparent',
+                  color: isActive(item.path) ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                  background: 'transparent',
                 }}
               >
                 {item.label}
@@ -198,7 +192,7 @@ export const TopBar: React.FC<TopBarProps> = ({ walletAddress, onWalletConnect }
           position: absolute;
           width: 0;
           height: 2px;
-          background: var(--color-primary);
+          background: #ffffff;
           transition: all 0.5s;
         }
 

@@ -53,7 +53,7 @@ export const Admin: React.FC = () => {
     {
       id: '3',
       jobId: 'job_c5p1q8y3',
-      provider: 'FinanceAI',
+      provider: 'FinanceBot',
       agentName: 'Savings Maximizer',
       timestamp: '2024-11-27 16:45:11',
       inputSnapshot: 'Current savings: $1523, Monthly surplus: $200',

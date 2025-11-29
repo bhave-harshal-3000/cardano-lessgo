@@ -383,25 +383,25 @@ export const Landing: React.FC = () => {
         transition={{ duration: 0.5 }}
         style={receiptStyles.nav}
       >
-        <div style={receiptStyles.logo}>*** FinanceAI ***</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img
+            src="/logo.png"
+            alt="FinanceBot Logo"
+            style={{
+              width: '40px',
+              height: '40px',
+              objectFit: 'contain',
+            }}
+          />
+          <div style={receiptStyles.logo}>FinanceBot</div>
+        </div>
         <div style={receiptStyles.navLinks}>
           <motion.span
             style={receiptStyles.navLink}
             whileHover={{ opacity: 1 }}
+            onClick={() => navigate('/about')}
           >
             ABOUT
-          </motion.span>
-          <motion.span
-            style={receiptStyles.navLink}
-            whileHover={{ opacity: 1 }}
-          >
-            FEATURES
-          </motion.span>
-          <motion.span
-            style={receiptStyles.navLink}
-            whileHover={{ opacity: 1 }}
-          >
-            CONTACT
           </motion.span>
         </div>
       </motion.nav>
@@ -422,11 +422,33 @@ export const Landing: React.FC = () => {
           <FloatingNumbers />
         </motion.div>
 
+        {/* Centered Logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '40px',
+          }}
+        >
+          <img
+            src="/logo.png"
+            alt="FinanceBot Logo"
+            style={{
+              width: '120px',
+              height: '120px',
+              objectFit: 'contain',
+            }}
+          />
+        </motion.div>
+
         <motion.div
           initial="hidden"
           animate="visible"
           variants={printRevealVariants}
-          transition={{ duration: 0.5, delay: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div style={receiptStyles.receiptHeader}>
             POWERED BY CARDANO BLOCKCHAIN
@@ -440,7 +462,7 @@ export const Landing: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           style={receiptStyles.mainTitle}
         >
-          <TypewriterText text="FinanceAI" delay={300} speed={120} />
+          <TypewriterText text="FinanceBot" delay={300} speed={120} />
         </motion.h1>
 
         <motion.p
@@ -680,7 +702,7 @@ export const Landing: React.FC = () => {
           </div>
 
           <div style={{ fontSize: '11px', opacity: 0.3, marginTop: '16px' }}>
-            © 2025 FinanceAI • All Rights Reserved
+            © 2025 FinanceBot • All Rights Reserved
           </div>
         </motion.div>
       </motion.footer>

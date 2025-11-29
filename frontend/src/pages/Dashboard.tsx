@@ -536,7 +536,7 @@ const ReceiptPrinter: React.FC<{ transactions: Array<{ id: number; description: 
                 letterSpacing: '1px',
               }}
             >
-              FINANCEAI POS
+              FINANCEBOT POS
             </div>
 
             {/* Status Light with bezel */}
@@ -691,7 +691,7 @@ const ReceiptPrinter: React.FC<{ transactions: Array<{ id: number; description: 
               {/* Receipt Header */}
               <div style={{ borderBottom: '1px dashed #999', paddingBottom: '12px', marginBottom: '12px' }}>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#2c3e50', textAlign: 'center' }}>
-                  FINANCEAI
+                  FINANCEBOT
                 </div>
                 <div style={{ fontSize: '11px', color: '#7f8c8d', textAlign: 'center', marginTop: '4px' }}>
                   Transaction Receipt
@@ -757,7 +757,7 @@ const ReceiptPrinter: React.FC<{ transactions: Array<{ id: number; description: 
                   textAlign: 'center',
                 }}
               >
-                Thank you for using FinanceAI
+                Thank you for using FinanceBot
               </div>
 
               {/* Paper Tear Effect */}
