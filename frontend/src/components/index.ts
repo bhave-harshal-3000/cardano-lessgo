@@ -9,4 +9,16 @@ export { Modal } from './Modal';
 export { ScanningLight } from './ScanningLight';
 export { TopBar } from './TopBar';
 export { TypewriterText } from './TypewriterText';
+export { 
+  ReceiptBarcode, 
+  ReceiptDivider, 
+  ReceiptHeader, 
+  ReceiptLineItem, 
+  ReceiptTotal,
+  ReceiptFooter,
+  PerforatedEdge,
+  ReceiptStamp,
+  ReceiptCard
+} from './ReceiptElements';
+
 

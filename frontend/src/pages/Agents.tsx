@@ -6,6 +6,8 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { TopBar } from '../components/TopBar';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptBarcode, ReceiptHeader } from '../components';
 
 interface Agent {
   id: string;
@@ -121,14 +123,17 @@ export const Agents: React.FC = () => {
   };
 
   return (
-    <AnimatedPage>
-      <TopBar />
-      <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <TopBar />
+        <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Agent Marketplace</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-            Discover and enable AI agents to enhance your financial management
-          </p>
+          <ReceiptHeader 
+            title="AGENT MARKETPLACE" 
+            subtitle="DISCOVER AND ENABLE AI AGENTS TO ENHANCE YOUR FINANCIAL MANAGEMENT"
+            session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+          />
         </motion.div>
 
         {/* Active Agents Section */}
@@ -349,7 +354,10 @@ export const Agents: React.FC = () => {
             </div>
           )}
         </Modal>
+
+        <ReceiptBarcode value="AGT-2024-001" width={200} margin="40px auto 0" />
       </div>
-    </AnimatedPage>
+      </AnimatedPage>
+    </div>
   );
 };

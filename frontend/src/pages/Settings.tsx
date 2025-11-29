@@ -6,6 +6,8 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { TopBar } from '../components/TopBar';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptHeader } from '../components';
 
 export const Settings: React.FC = () => {
   const [walletConnected, setWalletConnected] = useState(false);
@@ -21,14 +23,17 @@ export const Settings: React.FC = () => {
   const walletAddress = walletConnected ? 'addr1qx2kd28nq8s...7j8a9c4h6k' : null;
 
   return (
-    <AnimatedPage>
-      <TopBar walletAddress={walletAddress || undefined} />
-      <div style={{ padding: '32px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <TopBar walletAddress={walletAddress || undefined} />
+        <div style={{ padding: '32px', maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Settings</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-            Manage your profile, wallet, and preferences
-          </p>
+          <ReceiptHeader 
+            title="SETTINGS" 
+            subtitle="MANAGE YOUR PROFILE, WALLET, AND PREFERENCES"
+            session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+          />
         </motion.div>
 
         {/* Profile Section */}
@@ -385,6 +390,7 @@ export const Settings: React.FC = () => {
           </div>
         </Modal>
       </div>
-    </AnimatedPage>
+      </AnimatedPage>
+    </div>
   );
 };
