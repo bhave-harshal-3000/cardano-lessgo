@@ -48,6 +48,7 @@ export const transactionAPI = {
     category: string;
     description?: string;
     date?: Date;
+    inputSource?: 'UPI' | 'UserInput';
     htmlFile?: {
       content: string;
       fileName: string;

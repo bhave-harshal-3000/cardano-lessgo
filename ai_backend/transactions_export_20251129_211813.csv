@@ -1,0 +1,5 @@
+_id,userId,type,amount,currency,category,description,recipient,paymentMethod,accountNumber,transactionId,status,date,tags,UPI,UserInput
+692b15b8984fb2ea8ff34455,692b15b8984fb2ea8ff34454,expense,150.0,INR,Food & Dining,Lunch at restaurant,Starbucks,Credit Card,XXXX1234,TXN001,Completed,2025-11-24 21:18:08.697,"food,dining",1,0
+692b15b8984fb2ea8ff34456,692b15b8984fb2ea8ff34454,expense,500.0,INR,Shopping,Grocery shopping,Big Bazaar,UPI,XXXX5678,TXN002,Completed,2025-11-26 21:18:08.697,"shopping,groceries",1,0
+692b15b8984fb2ea8ff34457,692b15b8984fb2ea8ff34454,income,50000.0,INR,Salary,Monthly salary,,,,,,2025-11-28 21:18:08.697,"salary,income",0,1
+692b15b8984fb2ea8ff34458,692b15b8984fb2ea8ff34454,expense,1200.0,INR,Transportation,Uber ride,Uber,Bank Account,XXXX9999,TXN003,Pending,2025-11-29 21:18:08.697,transport,0,1

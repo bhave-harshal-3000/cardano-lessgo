@@ -36,11 +36,20 @@ export const Transactions: React.FC = () => {
 
   // Form state for manual transaction entry
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    category: 'Food & Dining',
-    amount: '',
     type: 'expense' as 'income' | 'expense',
+    amount: '',
+    currency: 'USD',
+    category: 'Food & Dining',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    recipient: '',
+    paymentMethod: '',
+    accountNumber: '',
+    transactionId: '',
+    status: 'Completed' as 'Completed' | 'Pending' | 'Failed' | 'Cancelled' | 'Processing',
+    walletAddress: '',
+    blockchainTxHash: '',
+    tags: '',
   });
 
   const { userId } = useWallet();
@@ -89,25 +98,39 @@ export const Transactions: React.FC = () => {
       }
       
       const amount = parseFloat(formData.amount);
-      if (!formData.description || isNaN(amount)) {
-        alert('Please fill in all fields correctly');
+      if (!formData.category || isNaN(amount)) {
+        alert('Please fill in required fields (Category and Amount)');
         return;
       }
 
-      const newTransaction = await transactionAPI.create({
+      // Map form data to DB schema, converting empty strings to null
+      const transactionData = {
         userId,
         type: formData.type,
         amount: Math.abs(amount),
+        currency: formData.currency || null,
         category: formData.category,
-        description: formData.description,
+        description: formData.description || null,
         date: new Date(formData.date),
-      });
+        recipient: formData.recipient || null,
+        paymentMethod: formData.paymentMethod || null,
+        accountNumber: formData.accountNumber || null,
+        transactionId: formData.transactionId || null,
+        status: formData.status,
+        walletAddress: formData.walletAddress || null,
+        blockchainTxHash: formData.blockchainTxHash || null,
+        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+        UPI: 0,
+        UserInput: 1,
+      };
+
+      const newTransaction = await transactionAPI.create(transactionData);
 
       // Add to local state
       const mappedTransaction = {
         id: newTransaction._id,
         date: formData.date,
-        description: formData.description,
+        description: formData.description || 'No description',
         category: formData.category,
         amount: formData.type === 'expense' ? -Math.abs(amount) : Math.abs(amount),
         autoCategorized: false,
@@ -118,11 +141,20 @@ export const Transactions: React.FC = () => {
       
       // Reset form and close modal
       setFormData({
-        date: new Date().toISOString().split('T')[0],
-        description: '',
-        category: 'Food & Dining',
-        amount: '',
         type: 'expense',
+        amount: '',
+        currency: 'USD',
+        category: 'Food & Dining',
+        description: '',
+        date: new Date().toISOString().split('T')[0],
+        recipient: '',
+        paymentMethod: '',
+        accountNumber: '',
+        transactionId: '',
+        status: 'Completed',
+        walletAddress: '',
+        blockchainTxHash: '',
+        tags: '',
       });
       setShowAddModal(false);
       setAddOption('select');
@@ -473,71 +505,225 @@ export const Transactions: React.FC = () => {
 
           {addOption === 'manual' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  Type
-                </label>
-                <select 
-                  style={{ width: '100%' }} 
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value as 'income' | 'expense' })}
-                >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                </select>
+              {/* Required Fields Section */}
+              <div style={{ paddingBottom: '12px', borderBottom: '1px solid var(--color-border)' }}>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '12px' }}>
+                  <span style={{ color: 'var(--color-error)' }}>*</span> Required fields
+                </p>
+
+                {/* Type (Required) */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Type <span style={{ color: 'var(--color-error)' }}>*</span>
+                  </label>
+                  <select 
+                    style={{ width: '100%' }} 
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'income' | 'expense' })}
+                  >
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                  </select>
+                </div>
+
+                {/* Amount (Required) */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Amount <span style={{ color: 'var(--color-error)' }}>*</span>
+                  </label>
+                  <input 
+                    type="number" 
+                    placeholder="0.00" 
+                    style={{ width: '100%' }} 
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  />
+                </div>
+
+                {/* Category (Required) */}
+                <div>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Category <span style={{ color: 'var(--color-error)' }}>*</span>
+                  </label>
+                  <select 
+                    style={{ width: '100%' }}
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    {categories.filter(c => c !== 'all').map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {/* Optional Fields Section */}
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  Date
-                </label>
-                <input 
-                  type="date" 
-                  style={{ width: '100%' }} 
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                />
+                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginBottom: '12px' }}>
+                  Optional fields (leave blank if not applicable)
+                </p>
+
+                {/* Date */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Date
+                  </label>
+                  <input 
+                    type="date" 
+                    style={{ width: '100%' }} 
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  />
+                </div>
+
+                {/* Description */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Description
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Grocery shopping" 
+                    style={{ width: '100%' }}
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+
+                {/* Currency */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Currency
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., USD, INR" 
+                    style={{ width: '100%' }}
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  />
+                </div>
+
+                {/* Recipient (Payment related) */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Recipient / Merchant
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Starbucks, John Doe" 
+                    style={{ width: '100%' }}
+                    value={formData.recipient}
+                    onChange={(e) => setFormData({ ...formData, recipient: e.target.value })}
+                  />
+                </div>
+
+                {/* Payment Method */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Payment Method
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Bank Account, Credit Card, UPI" 
+                    style={{ width: '100%' }}
+                    value={formData.paymentMethod}
+                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                  />
+                </div>
+
+                {/* Account Number (Masked) */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Account Number (e.g., Last 4 digits)
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., XXXX1234" 
+                    style={{ width: '100%' }}
+                    value={formData.accountNumber}
+                    onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                  />
+                </div>
+
+                {/* Transaction ID */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Transaction ID / Reference
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., TXN123456" 
+                    style={{ width: '100%' }}
+                    value={formData.transactionId}
+                    onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
+                  />
+                </div>
+
+                {/* Status */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Status
+                  </label>
+                  <select 
+                    style={{ width: '100%' }}
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                  >
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Cancelled">Cancelled</option>
+                    <option value="Processing">Processing</option>
+                  </select>
+                </div>
+
+                {/* Wallet Address (Blockchain) */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Wallet Address
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Cardano wallet address" 
+                    style={{ width: '100%' }}
+                    value={formData.walletAddress}
+                    onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
+                  />
+                </div>
+
+                {/* Blockchain TX Hash */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Blockchain TX Hash
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Cardano transaction hash" 
+                    style={{ width: '100%' }}
+                    value={formData.blockchainTxHash}
+                    onChange={(e) => setFormData({ ...formData, blockchainTxHash: e.target.value })}
+                  />
+                </div>
+
+                {/* Tags */}
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
+                    Tags (comma-separated)
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., urgent, personal, business" 
+                    style={{ width: '100%' }}
+                    value={formData.tags}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  />
+                </div>
               </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  Description
-                </label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., Grocery shopping" 
-                  style={{ width: '100%' }}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  Category
-                </label>
-                <select 
-                  style={{ width: '100%' }}
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                >
-                  {categories.filter(c => c !== 'all').map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '14px' }}>
-                  Amount
-                </label>
-                <input 
-                  type="number" 
-                  placeholder="0.00" 
-                  style={{ width: '100%' }} 
-                  step="0.01"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                />
-              </div>
+
               <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
                 <Button variant="outline" fullWidth onClick={() => setAddOption('select')}>
                   Back

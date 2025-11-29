@@ -1,0 +1,121 @@
+import pymongo
+import pandas as pd
+import os
+from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# MongoDB connection
+MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/cardano-hackathon')
+DB_NAME = 'cardano-hackathon'
+COLLECTION_NAME = 'transactions'
+
+def export_transactions_to_csv():
+    """
+    Fetch all transactions from MongoDB, convert to DataFrame, and export to CSV
+    """
+    try:
+        # Connect to MongoDB
+        client = pymongo.MongoClient(MONGO_URI)
+        db = client[DB_NAME]
+        collection = db[COLLECTION_NAME]
+        
+        print(f"Connecting to MongoDB: {MONGO_URI}")
+        print(f"Database: {DB_NAME}, Collection: {COLLECTION_NAME}")
+        
+        # Fetch all transactions
+        transactions = list(collection.find({}))
+        
+        if not transactions:
+            print("No transactions found in the database.")
+            return
+        
+        print(f"Found {len(transactions)} transactions")
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(transactions)
+        
+        # Clean up MongoDB-specific fields for CSV
+        # Convert ObjectId to string
+        if '_id' in df.columns:
+            df['_id'] = df['_id'].astype(str)
+        if 'userId' in df.columns:
+            df['userId'] = df['userId'].astype(str)
+        
+        # Flatten nested objects (htmlFile object)
+        if 'htmlFile' in df.columns:
+            htmlFile_data = []
+            for hf in df['htmlFile']:
+                if pd.isna(hf) or hf is None:
+                    htmlFile_data.append(None)
+                elif isinstance(hf, dict):
+                    # Store only fileName and uploadDate, skip content
+                    htmlFile_data.append(f"{hf.get('fileName', '')} ({hf.get('uploadDate', '')})")
+                else:
+                    htmlFile_data.append(str(hf))
+            df['htmlFile'] = htmlFile_data
+        
+        # Convert tags array to string
+        if 'tags' in df.columns:
+            df['tags'] = df['tags'].apply(lambda x: ','.join(x) if isinstance(x, list) else x)
+        
+        # Convert datetime objects to string
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                try:
+                    df[col] = df[col].apply(lambda x: x.isoformat() if isinstance(x, datetime) else x)
+                except:
+                    pass
+        
+        # Reorder columns for better readability
+        preferred_order = [
+            '_id', 'userId', 'type', 'amount', 'currency', 'category', 'description',
+            'recipient', 'paymentMethod', 'accountNumber', 'transactionId', 'status',
+            'date', 'walletAddress', 'blockchainTxHash', 'tags', 'UPI', 'UserInput',
+            'htmlFile', '__v'
+        ]
+        
+        # Only include columns that exist
+        available_cols = [col for col in preferred_order if col in df.columns]
+        other_cols = [col for col in df.columns if col not in preferred_order]
+        df = df[available_cols + other_cols]
+        
+        # Create CSV file with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"transactions_export_{timestamp}.csv"
+        csv_filepath = os.path.join(os.path.dirname(__file__), csv_filename)
+        
+        # Export to CSV
+        df.to_csv(csv_filepath, index=False, encoding='utf-8')
+        
+        print(f"\n✅ CSV exported successfully!")
+        print(f"File: {csv_filepath}")
+        print(f"Total rows: {len(df)}")
+        print(f"Total columns: {len(df.columns)}")
+        print(f"\nColumns: {', '.join(df.columns.tolist())}")
+        
+        # Print summary statistics
+        print(f"\n📊 Summary Statistics:")
+        print(f"  Total Transactions: {len(df)}")
+        if 'type' in df.columns:
+            print(f"  Income: {len(df[df['type'] == 'income'])}")
+            print(f"  Expenses: {len(df[df['type'] == 'expense'])}")
+        if 'amount' in df.columns:
+            print(f"  Total Amount: {df['amount'].sum()}")
+        if 'UPI' in df.columns and 'UserInput' in df.columns:
+            upi_count = (df['UPI'] == 1).sum()
+            user_input_count = (df['UserInput'] == 1).sum()
+            print(f"  HTML Imports (UPI=1): {upi_count}")
+            print(f"  Manual Inputs (UserInput=1): {user_input_count}")
+        
+        client.close()
+        return csv_filepath
+        
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        raise
+
+if __name__ == '__main__':
+    export_transactions_to_csv()
