@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatedPage } from '../components/AnimatedPage';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptBarcode, ReceiptDivider, ReceiptHeader } from '../components';
 
 type UserType = 'student' | 'working' | 'family' | null;
 type Mode = 'guest' | 'wallet' | null;
@@ -49,17 +51,21 @@ export const Onboarding: React.FC = () => {
   };
 
   return (
-    <AnimatedPage>
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '24px',
-          background: 'var(--color-bg-primary)',
-        }}
-      >
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            background: 'transparent',
+            position: 'relative',
+            zIndex: 2,
+          }}
+        >
         <div style={{ maxWidth: '700px', width: '100%' }}>
           {/* Progress Bar */}
           <motion.div
@@ -105,12 +111,13 @@ export const Onboarding: React.FC = () => {
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.3 }}
               >
-                <h2 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px' }}>
-                  Welcome to FinanceBot
-                </h2>
-                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '32px', fontSize: '16px' }}>
-                  Choose how you'd like to get started. You can always connect your wallet later.
-                </p>
+                <ReceiptHeader 
+                  title="WELCOME TO FINANCEBOT" 
+                  subtitle="CHOOSE HOW YOU'D LIKE TO GET STARTED. YOU CAN ALWAYS CONNECT YOUR WALLET LATER."
+                  session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+                />
+
+                <ReceiptDivider margin="24px 0" />
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <Card hover onClick={() => setMode('guest')}>
@@ -406,8 +413,11 @@ export const Onboarding: React.FC = () => {
               {step === totalSteps ? 'Complete Setup' : 'Continue'}
             </Button>
           </motion.div>
+
+          <ReceiptBarcode value="ONB-2024-001" width={180} margin="32px auto 0" />
         </div>
       </div>
-    </AnimatedPage>
+      </AnimatedPage>
+    </div>
   );
 };

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { AnimatedPage } from '../components/AnimatedPage';
 import { Card } from '../components/Card';
 import { TopBar } from '../components/TopBar';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptBarcode, ReceiptHeader } from '../components';
 
 interface AgentLog {
   id: string;
@@ -101,14 +103,17 @@ export const Admin: React.FC = () => {
   );
 
   return (
-    <AnimatedPage>
-      <TopBar />
-      <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <TopBar />
+        <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Admin Panel</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-            View agent execution logs and blockchain proofs
-          </p>
+          <ReceiptHeader 
+            title="ADMIN PANEL" 
+            subtitle="VIEW AGENT EXECUTION LOGS AND BLOCKCHAIN PROOFS"
+            session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+          />
         </motion.div>
 
         {/* Tabs */}
@@ -335,7 +340,10 @@ export const Admin: React.FC = () => {
             </Card>
           </motion.div>
         )}
+
+        <ReceiptBarcode value="ADM-2024-001" width={200} margin="40px auto 0" />
       </div>
-    </AnimatedPage>
+      </AnimatedPage>
+    </div>
   );
 };

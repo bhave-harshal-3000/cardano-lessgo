@@ -5,6 +5,8 @@ import { AnimatedPage } from '../components/AnimatedPage';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { TopBar } from '../components/TopBar';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptBarcode, ReceiptHeader } from '../components';
 
 interface BudgetCategory {
   name: string;
@@ -45,17 +47,20 @@ export const Budget: React.FC = () => {
   };
 
   return (
-    <AnimatedPage>
-      <TopBar />
-      <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <TopBar />
+        <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '32px' }}>
+          <ReceiptHeader 
+            title="BUDGET & GOALS" 
+            subtitle="SET BUDGETS AND GET AI-POWERED RECOMMENDATIONS"
+            session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+          />
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Budget & Goals</h1>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-                Set budgets and get AI-powered recommendations
-              </p>
-            </div>
+            <div style={{ flex: 1 }} />
             <div style={{ display: 'flex', gap: '12px' }}>
               <Button variant="accent" icon={Sparkles} onClick={handleGetSuggestions}>
                 Get AI Suggestion
@@ -222,7 +227,10 @@ export const Budget: React.FC = () => {
             </div>
           </Card>
         </motion.div>
+
+        <ReceiptBarcode value="BDG-2024-001" width={200} margin="40px auto 0" />
       </div>
-    </AnimatedPage>
+      </AnimatedPage>
+    </div>
   );
 };

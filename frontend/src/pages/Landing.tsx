@@ -8,6 +8,9 @@ import {
   GlowingParticles,
   ScanningLight,
   TypewriterText,
+  ReceiptBarcode,
+  ReceiptDivider,
+  ReceiptStamp,
 } from '../components';
 
 export const Landing: React.FC = () => {
@@ -537,7 +540,20 @@ export const Landing: React.FC = () => {
             CONNECT WALLET 🔐
           </motion.button>
         </motion.div>
+
+        {/* Barcode */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 2 }}
+        >
+          <ReceiptBarcode value="1234567890123" width={250} />
+        </motion.div>
+        
+        <ReceiptStamp text="VERIFIED" rotation={-12} />
       </motion.section>
+
+      <ReceiptDivider margin="40px 0" />
 
       {/* Stats Section */}
       <motion.section
@@ -597,6 +613,8 @@ export const Landing: React.FC = () => {
           </motion.div>
         </div>
       </motion.section>
+
+      <ReceiptDivider margin="60px 0" />
 
       {/* Features Section */}
       <motion.section

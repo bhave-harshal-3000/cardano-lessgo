@@ -6,6 +6,8 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { TopBar } from '../components/TopBar';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptBarcode, ReceiptDivider, ReceiptHeader } from '../components';
 
 interface Transaction {
   id: string;
@@ -226,26 +228,31 @@ export const Transactions: React.FC = () => {
   });
 
   return (
-    <AnimatedPage>
-      <TopBar />
-      <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
-        {/* Header */}
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <TopBar />
+        <div style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 2 }}>
+          {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           style={{ marginBottom: '32px' }}
         >
+          <ReceiptHeader 
+            title="TRANSACTIONS" 
+            subtitle="MANAGE AND CATEGORIZE YOUR TRANSACTIONS"
+            session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+          />
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Transactions</h1>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-                Manage and categorize your transactions
-              </p>
-            </div>
+            <div style={{ flex: 1 }} />
             <Button variant="primary" icon={Plus} onClick={() => setShowAddModal(true)}>
               Add Transaction
             </Button>
           </div>
+
+          <ReceiptDivider margin="24px 0" />
 
           {/* Filters */}
           <Card decorative>
@@ -1029,7 +1036,10 @@ export const Transactions: React.FC = () => {
         >
           <Plus size={28} />
         </motion.button>
+
+        <ReceiptBarcode value="TXN-2024-001" width={200} margin="40px auto 0" />
       </div>
-    </AnimatedPage>
+      </AnimatedPage>
+    </div>
   );
 };

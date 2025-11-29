@@ -18,6 +18,8 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { TopBar } from '../components/TopBar';
+import { receiptTheme } from '../styles/receiptTheme';
+import { ReceiptBarcode, ReceiptDivider, ReceiptHeader } from '../components';
 
 export const Dashboard: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -78,9 +80,11 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <AnimatedPage>
-      <TopBar />
-      <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto', display: 'flex', gap: '32px' }}>
+    <div style={{ ...receiptTheme.pageWrapper, ...receiptTheme.cssVariables }}>
+      <div style={receiptTheme.paperTexture} />
+      <AnimatedPage>
+        <TopBar />
+        <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto', display: 'flex', gap: '32px', position: 'relative', zIndex: 2 }}>
         {/* Left Side - Main Dashboard */}
         <div style={{ flex: '1', minWidth: '0' }}>
         {/* Header */}
@@ -89,13 +93,14 @@ export const Dashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           style={{ marginBottom: '32px' }}
         >
+          <ReceiptHeader 
+            title="DASHBOARD" 
+            subtitle="MONTHLY FINANCIAL OVERVIEW"
+            session={String(Math.floor(Math.random() * 10000)).padStart(5, '0')}
+          />
+          
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>Dashboard</h1>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
-                Monthly financial overview
-              </p>
-            </div>
+            <div style={{ flex: 1 }} />
 
             {/* Month Selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -216,6 +221,8 @@ export const Dashboard: React.FC = () => {
             ))}
           </div>
         </motion.div>
+
+        <ReceiptDivider margin="40px 0" />
 
         {/* Main Content Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '24px', marginBottom: '24px' }}>
@@ -454,7 +461,9 @@ export const Dashboard: React.FC = () => {
           <ReceiptPrinter transactions={recentTransactions} />
         </div>
       </div>
-    </AnimatedPage>
+      <ReceiptBarcode value="DB-2024-001" width={200} margin="40px auto 0" />
+      </AnimatedPage>
+    </div>
   );
 };
 
