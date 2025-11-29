@@ -4,12 +4,13 @@ import os
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from backend/.env
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'backend', '.env')
+load_dotenv(dotenv_path)
 
-# MongoDB connection
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/cardano-hackathon')
-DB_NAME = 'cardano-hackathon'
+# MongoDB connection - use MONGODB_URI from backend/.env
+MONGO_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/financebot')
+DB_NAME = 'financebot'
 COLLECTION_NAME = 'transactions'
 
 def export_transactions_to_csv():
