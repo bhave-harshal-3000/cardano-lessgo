@@ -31,15 +31,20 @@ gemini_llm = LLM(
 # 📊 HELPER FUNCTIONS
 # ============================
 
-def export_transactions_to_csv():
-    """Run the export script to get fresh transaction data"""
+def export_transactions_to_csv(user_id: str = None):
+    """Run the export script to get fresh transaction data for specific user"""
     try:
         export_script = os.path.join(os.path.dirname(__file__), 'export_transactions_to_csv.py')
         print(f"[DEBUG] Export script path: {export_script}")
         print(f"[DEBUG] Export script exists: {os.path.exists(export_script)}")
         
+        cmd = ['python', export_script]
+        if user_id:
+            cmd.append(user_id)
+            print(f"[DEBUG] Exporting for user_id: {user_id}")
+        
         result = subprocess.run(
-            ['python', export_script],
+            cmd,
             capture_output=True,
             text=True,
             timeout=30
@@ -126,12 +131,12 @@ Analyze EVERY transaction. Return ONLY the JSON object above with no additional 
 # 🚀 CREW & RUN
 # ============================
 
-def analyze_spending_patterns():
+def analyze_spending_patterns(user_id: str = None):
     """Main function to run the CrewAI financial analyzer"""
     try:
         # Step 1: Export transactions
         print("[INFO] Exporting transactions...")
-        csv_path = export_transactions_to_csv()
+        csv_path = export_transactions_to_csv(user_id)
         
         if not csv_path:
             print("[ERROR] Failed to export transactions")
@@ -187,10 +192,10 @@ def analyze_spending_patterns():
         traceback.print_exc()
         return None
 
-def run_insights_agent():
+def run_insights_agent(user_id: str = None):
     """Entry point for running the insights agent"""
     try:
-        result = analyze_spending_patterns()
+        result = analyze_spending_patterns(user_id)
         
         if result:
             final_output = {

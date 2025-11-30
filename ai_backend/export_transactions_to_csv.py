@@ -1,7 +1,9 @@
 import pymongo
 import pandas as pd
 import os
+import sys
 from datetime import datetime
+from bson.objectid import ObjectId
 from dotenv import load_dotenv
 
 # Load environment variables from backend/.env
@@ -13,9 +15,10 @@ MONGO_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/financebot')
 DB_NAME = 'financebot'
 COLLECTION_NAME = 'transactions'
 
-def export_transactions_to_csv():
+def export_transactions_to_csv(user_id: str = None):
     """
-    Fetch all transactions from MongoDB, convert to DataFrame, and export to CSV
+    Fetch transactions from MongoDB, convert to DataFrame, and export to CSV
+    If user_id is provided, filter transactions for that user only
     """
     try:
         # Connect to MongoDB
@@ -26,8 +29,18 @@ def export_transactions_to_csv():
         print(f"Connecting to MongoDB: {MONGO_URI}")
         print(f"Database: {DB_NAME}, Collection: {COLLECTION_NAME}")
         
-        # Fetch all transactions
-        transactions = list(collection.find({}))
+        # Build query filter
+        query_filter = {}
+        if user_id:
+            try:
+                user_oid = ObjectId(user_id)
+                query_filter = {'userId': user_oid}
+                print(f"Filtering transactions for user_id: {user_id}")
+            except Exception as e:
+                print(f"[WARN] Invalid user_id format: {user_id}, fetching all transactions: {e}")
+        
+        # Fetch transactions with optional user filter
+        transactions = list(collection.find(query_filter))
         
         if not transactions:
             print("No transactions found in the database.")
@@ -120,4 +133,6 @@ def export_transactions_to_csv():
         raise
 
 if __name__ == '__main__':
-    export_transactions_to_csv()
+    # Get user_id from command line argument if provided
+    user_id = sys.argv[1] if len(sys.argv) > 1 else None
+    export_transactions_to_csv(user_id)
