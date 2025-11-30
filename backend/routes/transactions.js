@@ -57,6 +57,12 @@ router.post('/', async (req, res) => {
           console.log(`[HTML Upload] Found user by ID: ${user ? 'YES' : 'NO'}`);
         }
         
+        // If not found by userId, try to find by walletAddress
+        if (!user && req.body.walletAddress) {
+          user = await User.findOne({ walletAddress: req.body.walletAddress });
+          console.log(`[HTML Upload] Found user by walletAddress: ${user ? 'YES' : 'NO'}`);
+        }
+        
         // Create user if doesn't exist
         if (!user) {
           if (!req.body.walletAddress) {
