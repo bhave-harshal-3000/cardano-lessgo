@@ -43,7 +43,8 @@ const chartColors = {
 };
 
 export const Visualizations: React.FC = () => {
-  const { userId } = useWallet();
+  const { userId: walletUserId } = useWallet();
+  const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vizData, setVizData] = useState<VisualizationData | null>(null);
@@ -69,9 +70,18 @@ export const Visualizations: React.FC = () => {
     };
   }, []);
 
-  const fetchVisualizations = async () => {
-    if (!userId) {
-      setError('User ID not found. Please connect your wallet.');
+  // Initialize userId from wallet if available
+  useEffect(() => {
+    if (walletUserId && !userId) {
+      setUserId(walletUserId);
+    }
+  }, [walletUserId, userId]);
+
+  const fetchVisualizations = async (id?: string) => {
+    const targetUserId = id || userId;
+    
+    if (!targetUserId) {
+      setError('Please enter a User ID');
       return;
     }
 
@@ -80,7 +90,7 @@ export const Visualizations: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:5002/visualize?userId=${userId}`
+        `http://localhost:5002/visualize?userId=${targetUserId}`
       );
 
       if (!response.ok) {
@@ -103,8 +113,10 @@ export const Visualizations: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchVisualizations();
-  }, [userId]);
+    if (userId && walletUserId === userId) {
+      fetchVisualizations(userId);
+    }
+  }, [walletUserId]);
 
   // Render charts when data is available
   useEffect(() => {
@@ -211,6 +223,33 @@ export const Visualizations: React.FC = () => {
                 Comprehensive analysis of your transactions and spending patterns
               </p>
             </div>
+
+            {/* User ID Input Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-12 p-6 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-purple-500"
+            >
+              <label className="block text-purple-200 font-semibold mb-4">
+                Enter User ID to Generate Visualizations
+              </label>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  placeholder="Enter MongoDB User ID"
+                  className="flex-1 px-4 py-3 bg-slate-700 border border-purple-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-500/30"
+                />
+                <button
+                  onClick={() => fetchVisualizations(userId)}
+                  disabled={loading || !userId}
+                  className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Generating...' : 'Generate'}
+                </button>
+              </div>
+            </motion.div>
 
             {/* Stats */}
             {vizData && (
@@ -339,7 +378,7 @@ export const Visualizations: React.FC = () => {
                 className="mt-12 text-center"
               >
                 <button
-                  onClick={fetchVisualizations}
+                  onClick={() => fetchVisualizations(userId)}
                   className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all"
                 >
                   <RefreshCw className="w-5 h-5" />
