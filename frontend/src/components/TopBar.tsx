@@ -21,6 +21,7 @@ export const TopBar: React.FC<TopBarProps> = () => {
     { path: '/savings', label: 'Savings' },
     { path: '/agents', label: 'Agents' },
     { path: '/insights', label: 'Insights' },
+    { path: '/visualizations', label: 'Visualizations' },
     { path: '/settings', label: 'Settings' },
   ];
 
