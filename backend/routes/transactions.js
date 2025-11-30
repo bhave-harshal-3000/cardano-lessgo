@@ -46,6 +46,35 @@ router.post('/', async (req, res) => {
       console.log('========================================\n');
       
       try {
+        // ✅ ENSURE USER EXISTS BEFORE CREATING TRANSACTIONS
+        let user = null;
+        
+        console.log(`[HTML Upload] userId: ${req.body.userId}, walletAddress: ${req.body.walletAddress}`);
+        
+        if (req.body.userId) {
+          user = await User.findById(req.body.userId);
+          console.log(`[HTML Upload] Found user by ID: ${user ? 'YES' : 'NO'}`);
+        }
+        
+        // Create user if doesn't exist
+        if (!user) {
+          if (!req.body.walletAddress) {
+            console.error('[HTML Upload] ❌ Cannot create user: no walletAddress provided');
+            return res.status(400).json({
+              error: 'Cannot create transactions: missing walletAddress'
+            });
+          }
+          
+          user = new User({
+            walletAddress: req.body.walletAddress,
+            name: req.body.name || 'User',
+            email: req.body.email || '',
+          });
+          await user.save();
+          console.log(`✅ [HTML Upload] Created new user: ${user._id} with wallet: ${req.body.walletAddress}`);
+          req.body.userId = user._id; // Update userId to the newly created user
+        }
+        
         // Use Python flexible parser
         const parsedTransactions = await parseGPayHtmlWithPython(htmlContent, fileName, req.body.walletAddress);
         
