@@ -155,15 +155,6 @@ def get_budget_plan():
             "message": "Failed to generate budget plan"
         }), 500
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({
-        "status": "healthy",
-        "service": "Cardano Insights API",
-        "version": "1.0.0"
-    }), 200
-
 @app.route('/', methods=['GET'])
 def index():
     """API documentation"""
