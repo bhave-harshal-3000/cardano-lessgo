@@ -13,6 +13,8 @@ from crewai.llm import LLM
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 import csv
+import webbrowser
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
@@ -368,9 +370,289 @@ def get_transaction_categorization(csv_content: str) -> dict:
         
     except Exception as e:
         print(f"[ERROR] Categorization failed: {e}")
+        print("[WARN] Continuing without categorization - using 'Uncategorized' for all transactions")
         import traceback
         traceback.print_exc()
         return {}
+
+# ============================
+# 🎬 MAIN VISUALIZATION FUNCTION
+# ============================
+
+def generate_html_visualization(data: dict) -> str:
+    """Generate HTML with Chart.js visualizations"""
+    visualizations = data.get('visualizations', [])
+    viz_html_list = []
+    
+    for idx, viz in enumerate(visualizations):
+        if 'error' in viz:
+            continue
+        
+        chart_type = viz.get('type', 'pie')
+        title = viz.get('title', f'Visualization {idx+1}')
+        chart_data = viz.get('data', {})
+        
+        # Create canvas ID
+        canvas_id = f"chart-{idx}"
+        
+        # Build chart configuration based on type
+        if chart_type == 'pie':
+            chart_config = f"""
+            {{
+                type: 'pie',
+                data: {{
+                    labels: {json.dumps(chart_data.get('labels', []))},
+                    datasets: [{json.dumps(chart_data.get('datasets', [{}])[0])}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {{
+                        legend: {{position: 'bottom'}},
+                        title: {{display: true, text: '{title}'}}
+                    }}
+                }}
+            }}
+            """
+        elif chart_type == 'line':
+            chart_config = f"""
+            {{
+                type: 'line',
+                data: {{
+                    labels: {json.dumps(chart_data.get('labels', []))},
+                    datasets: {json.dumps(chart_data.get('datasets', []))}
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {{
+                        title: {{display: true, text: '{title}'}}
+                    }},
+                    scales: {{
+                        y: {{beginAtZero: true}}
+                    }}
+                }}
+            }}
+            """
+        elif chart_type == 'bar':
+            chart_config = f"""
+            {{
+                type: 'bar',
+                data: {{
+                    labels: {json.dumps(chart_data.get('labels', []))},
+                    datasets: {json.dumps(chart_data.get('datasets', []))}
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {{
+                        title: {{display: true, text: '{title}'}}
+                    }},
+                    scales: {{
+                        y: {{beginAtZero: true}}
+                    }}
+                }}
+            }}
+            """
+        elif chart_type == 'doughnut':
+            chart_config = f"""
+            {{
+                type: 'doughnut',
+                data: {{
+                    labels: {json.dumps(chart_data.get('labels', []))},
+                    datasets: [{json.dumps(chart_data.get('datasets', [{}])[0])}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {{
+                        legend: {{position: 'bottom'}},
+                        title: {{display: true, text: '{title}'}}
+                    }}
+                }}
+            }}
+            """
+        else:
+            continue
+        
+        viz_html = f"""
+        <div class="chart-container">
+            <canvas id="{canvas_id}"></canvas>
+        </div>
+        <script>
+            new Chart(document.getElementById('{canvas_id}'), {chart_config});
+        </script>
+        """
+        viz_html_list.append(viz_html)
+    
+    # Combine all visualizations into HTML
+    all_charts = '\n'.join(viz_html_list)
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cardano Financial Visualizations</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            * {{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }}
+            
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 40px 20px;
+                min-height: 100vh;
+            }}
+            
+            .container {{
+                max-width: 1400px;
+                margin: 0 auto;
+            }}
+            
+            .header {{
+                text-align: center;
+                color: white;
+                margin-bottom: 50px;
+            }}
+            
+            .header h1 {{
+                font-size: 3em;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            }}
+            
+            .header p {{
+                font-size: 1.1em;
+                opacity: 0.9;
+            }}
+            
+            .stats {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-bottom: 50px;
+            }}
+            
+            .stat-card {{
+                background: white;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+                text-align: center;
+            }}
+            
+            .stat-card h3 {{
+                color: #667eea;
+                font-size: 0.9em;
+                text-transform: uppercase;
+                margin-bottom: 10px;
+                letter-spacing: 1px;
+            }}
+            
+            .stat-card .value {{
+                font-size: 2em;
+                font-weight: bold;
+                color: #333;
+            }}
+            
+            .charts-grid {{
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+                gap: 30px;
+                margin-bottom: 50px;
+            }}
+            
+            .chart-container {{
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+                position: relative;
+                height: 400px;
+            }}
+            
+            .chart-container canvas {{
+                max-height: 350px;
+            }}
+            
+            .footer {{
+                text-align: center;
+                color: white;
+                margin-top: 40px;
+                opacity: 0.8;
+            }}
+            
+            @media (max-width: 768px) {{
+                .charts-grid {{
+                    grid-template-columns: 1fr;
+                }}
+                
+                .header h1 {{
+                    font-size: 2em;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>💰 Financial Visualizations</h1>
+                <p>Cardano Budget Planner - Transaction Analysis</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Total Transactions</h3>
+                    <div class="value">{data.get('transactionCount', 0)}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>User ID</h3>
+                    <div class="value" style="font-size: 0.9em; word-break: break-all;">{data.get('userId', 'N/A')[:20]}...</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Categories Found</h3>
+                    <div class="value">{len(set(data.get('categorization', {{}}).values()))}</div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                {all_charts}
+            </div>
+            
+            <div class="footer">
+                <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return html_content
+
+def display_visualizations_in_browser(html_content: str) -> None:
+    """Display visualizations in default browser"""
+    try:
+        # Save HTML to temp file
+        html_file = os.path.join(os.path.dirname(__file__), 'visualizations.html')
+        
+        with open(html_file, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        print(f"[INFO] Visualizations saved to: {html_file}")
+        
+        # Open in browser
+        file_url = f'file:///{os.path.abspath(html_file)}'.replace('\\', '/')
+        print(f"[INFO] Opening in browser: {file_url}")
+        webbrowser.open(file_url)
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to display visualizations: {e}")
 
 # ============================
 # 🎬 MAIN VISUALIZATION FUNCTION
@@ -424,13 +706,20 @@ def visualize_data(user_id: str = None) -> dict:
         viz4 = build_payment_method_distribution(transactions)
         viz5 = build_income_vs_expense(transactions)
         
-        return {
+        result = {
             "success": True,
             "userId": user_id,
             "transactionCount": len(transactions),
             "visualizations": [viz1, viz2, viz3, viz4, viz5],
             "categorization": categorization
         }
+        
+        # Generate and display HTML visualizations
+        print("[INFO] Generating HTML visualizations...")
+        html_content = generate_html_visualization(result)
+        display_visualizations_in_browser(html_content)
+        
+        return result
         
     except Exception as e:
         print(f"[ERROR] Visualization failed: {str(e)}")
