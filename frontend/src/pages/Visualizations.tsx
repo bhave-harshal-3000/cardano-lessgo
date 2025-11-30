@@ -1,10 +1,15 @@
 import { motion } from 'framer-motion';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatedPage } from '../components/AnimatedPage';
 import { TopBar } from '../components/TopBar';
 import { useWallet } from '../contexts/WalletContext';
 import { BarChart3, PieChart, TrendingUp, RefreshCw, AlertCircle } from 'lucide-react';
-import Chart from 'chart.js/auto';
+
+declare global {
+  interface Window {
+    Chart: any;
+  }
+}
 
 interface VisualizationData {
   success: boolean;
@@ -42,7 +47,27 @@ export const Visualizations: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vizData, setVizData] = useState<VisualizationData | null>(null);
-  const [chartInstances, setChartInstances] = useState<Record<string, Chart>>({});
+  const chartInstancesRef = useRef<Record<string, any>>({});
+  const chartsLoadedRef = useRef(false);
+
+  // Load Chart.js from CDN
+  useEffect(() => {
+    if (chartsLoadedRef.current) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+    script.async = true;
+    script.onload = () => {
+      chartsLoadedRef.current = true;
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   const fetchVisualizations = async () => {
     if (!userId) {
@@ -57,13 +82,13 @@ export const Visualizations: React.FC = () => {
       const response = await fetch(
         `http://localhost:5002/visualize?userId=${userId}`
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch visualizations: ${response.statusText}`);
       }
 
       const data: VisualizationData = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || 'Failed to generate visualizations');
       }
@@ -83,76 +108,84 @@ export const Visualizations: React.FC = () => {
 
   // Render charts when data is available
   useEffect(() => {
-    if (!vizData?.visualizations) return;
+    if (!vizData?.visualizations || !chartsLoadedRef.current) return;
 
-    const newChartInstances: Record<string, Chart> = {};
+    // Wait a bit for Chart.js to be available
+    const timer = setTimeout(() => {
+      const Chart = window.Chart;
+      if (!Chart) return;
 
-    vizData.visualizations.forEach((viz, index) => {
-      const canvasId = `chart-${index}`;
-      const canvasElement = document.getElementById(canvasId) as HTMLCanvasElement;
+      const newChartInstances: Record<string, any> = {};
 
-      if (!canvasElement) return;
+      vizData.visualizations.forEach((viz, index) => {
+        const canvasId = `chart-${index}`;
+        const canvasElement = document.getElementById(canvasId) as HTMLCanvasElement;
 
-      // Destroy existing chart if it exists
-      if (chartInstances[canvasId]) {
-        chartInstances[canvasId].destroy();
-      }
+        if (!canvasElement) return;
 
-      const ctx = canvasElement.getContext('2d');
-      if (!ctx) return;
+        // Destroy existing chart if it exists
+        if (chartInstancesRef.current[canvasId]) {
+          chartInstancesRef.current[canvasId].destroy();
+        }
 
-      const chartConfig = {
-        type: viz.type as any,
-        data: {
-          labels: viz.data.labels,
-          datasets: viz.data.datasets.map((dataset) => ({
-            ...dataset,
-            backgroundColor:
-              dataset.backgroundColor ||
-              Object.values(chartColors).slice(0, viz.data.labels.length),
-          })),
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom' as const,
-              labels: {
-                font: { size: 12 },
-                padding: 15,
+        const ctx = canvasElement.getContext('2d');
+        if (!ctx) return;
+
+        const chartConfig = {
+          type: viz.type,
+          data: {
+            labels: viz.data.labels,
+            datasets: viz.data.datasets.map((dataset) => ({
+              ...dataset,
+              backgroundColor:
+                dataset.backgroundColor ||
+                Object.values(chartColors).slice(0, viz.data.labels.length),
+            })),
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom' as const,
+                labels: {
+                  font: { size: 12 },
+                  padding: 15,
+                },
+              },
+              title: {
+                display: true,
+                text: viz.title,
+                font: { size: 14, weight: 'bold' as const },
               },
             },
-            title: {
-              display: true,
-              text: viz.title,
-              font: { size: 14, weight: 'bold' },
-            },
+            scales:
+              viz.type === 'pie' || viz.type === 'doughnut'
+                ? {}
+                : {
+                    y: {
+                      beginAtZero: true,
+                      ticks: { font: { size: 11 } },
+                    },
+                    x: {
+                      ticks: { font: { size: 11 } },
+                    },
+                  },
           },
-          scales:
-            viz.type === 'pie' || viz.type === 'doughnut'
-              ? {}
-              : {
-                  y: {
-                    beginAtZero: true,
-                    ticks: { font: { size: 11 } },
-                  },
-                  x: {
-                    ticks: { font: { size: 11 } },
-                  },
-                },
-        },
-      };
+        };
 
-      const chart = new Chart(ctx, chartConfig as any);
-      newChartInstances[canvasId] = chart;
-    });
+        try {
+          const chart = new Chart(ctx, chartConfig as any);
+          newChartInstances[canvasId] = chart;
+        } catch (err) {
+          console.error(`Error creating chart ${canvasId}:`, err);
+        }
+      });
 
-    setChartInstances(newChartInstances);
+      chartInstancesRef.current = newChartInstances;
+    }, 500);
 
-    return () => {
-      Object.values(newChartInstances).forEach((chart) => chart.destroy());
-    };
+    return () => clearTimeout(timer);
   }, [vizData]);
 
   return (
@@ -281,7 +314,7 @@ export const Visualizations: React.FC = () => {
             {/* Charts Grid */}
             {vizData && !loading && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {vizData.visualizations.map((viz, index) => (
+                {vizData.visualizations.map((_, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, scale: 0.95 }}
