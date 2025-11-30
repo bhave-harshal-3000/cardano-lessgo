@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from insights_agent import analyze_spending_patterns
 from budgetPlanner import plan_all_goals
-from vizagent import visualize_data
 import json
 import os
 import traceback
@@ -165,60 +164,10 @@ def index():
         "endpoints": {
             "GET /health": "Health check",
             "GET /insights?userId=<userId>": "Get financial insights from transaction data",
-            "GET /budget?userId=<userId>": "Generate budget plan for user's savings goals",
-            "GET /visualize?userId=<userId>": "Generate visualizations for transaction data"
+            "GET /budget?userId=<userId>": "Generate budget plan for user's savings goals"
         },
         "documentation": "Use Postman to access endpoints"
     }), 200
-
-@app.route('/visualize', methods=['GET'])
-def get_visualizations():
-    """
-    Generate visualizations for user's transaction data
-    Returns: JSON with 5 different visualizations (pie, line, bar, doughnut charts)
-    """
-    try:
-        user_id = request.args.get('userId')
-        if not user_id:
-            return jsonify({
-                "success": False,
-                "error": "Missing userId parameter",
-                "message": "userId query parameter is required"
-            }), 400
-        
-        print(f"🚀 Generating visualizations for user {user_id}...")
-        
-        # Run the visualization agent
-        viz_result = visualize_data(user_id)
-        
-        if viz_result is None:
-            return jsonify({
-                "success": False,
-                "error": "No visualization result",
-                "message": "Failed to generate visualizations"
-            }), 500
-        
-        # visualization returns a dict, return directly
-        if isinstance(viz_result, dict):
-            if viz_result.get("success"):
-                return jsonify(viz_result), 200
-            else:
-                return jsonify(viz_result), 500
-        
-        return jsonify({
-            "success": False,
-            "error": "Unexpected response format",
-            "message": "Failed to generate visualizations"
-        }), 500
-        
-    except Exception as e:
-        print(f"❌ Error generating visualizations: {str(e)}")
-        traceback.print_exc()
-        return jsonify({
-            "success": False,
-            "error": str(e),
-            "message": "Failed to generate visualizations"
-        }), 500
 
 if __name__ == '__main__':
     port = int(os.getenv('INSIGHTS_API_PORT', 5002))
